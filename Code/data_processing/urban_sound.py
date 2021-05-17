@@ -12,7 +12,7 @@ class UrbanSound8K:
         self.class_ids = class_ids
 
     def _get_urban_sound_8K_filenames(self):
-        urbansound_metadata = pd.read_csv(os.path.join(self.basepath, 'metadata', 'UrbanSound8K.csv'))
+        urbansound_metadata = pd.read_csv(os.path.join(self.basepath, 'metadata', 'urban_dataset.csv'))
 
         # shuffle the dataframe
         urbansound_metadata.reindex(np.random.permutation(urbansound_metadata.index))
@@ -63,6 +63,6 @@ class UrbanSound8K:
 
         urbansound_test_filenames = self._get_filenames_by_class_id(urbansound_train)
         np.random.shuffle(urbansound_test_filenames)
-
+# of Noi
         print("# of Noise testing files:", len(urbansound_test_filenames))
         return urbansound_test_filenames

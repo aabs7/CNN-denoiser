@@ -10,7 +10,7 @@ class MozillaCommonVoiceDataset:
         self.basepath = basepath
         self.val_dataset_size = val_dataset_size
 
-    def _get_common_voice_filenames(self, dataframe_name='train.tsv'):
+    def _get_common_voice_filenames(self, dataframe_name='mozilla_clean_train.csv'):
         mozilla_metadata = pd.read_csv(os.path.join(self.basepath, dataframe_name), sep='\t')
         clean_files = mozilla_metadata['path'].values
         np.random.shuffle(clean_files)
@@ -18,7 +18,7 @@ class MozillaCommonVoiceDataset:
         return clean_files
 
     def get_train_val_filenames(self):
-        clean_files = self._get_common_voice_filenames(dataframe_name='train.tsv')
+        clean_files = self._get_common_voice_filenames(dataframe_name='mozilla_clean_train.csv')
 
         # resolve full path
         clean_files = [os.path.join(self.basepath, 'clips', filename + '.mp3') for filename in clean_files]
@@ -31,10 +31,10 @@ class MozillaCommonVoiceDataset:
 
 
     def get_test_filenames(self):
-        clean_files = self._get_common_voice_filenames(dataframe_name='test.tsv')
+        clean_files = self._get_common_voice_filenames(dataframe_name='mozilla_clean_test.csv')
 
         # resolve full path
-        clean_files = [os.path.join(self.basepath, 'clips', 'test', filename) for filename in clean_files]
+        clean_files = [os.path.join(self.basepath, 'clips', filename+'.mp3') for filename in clean_files]
 
         print("# of Testing clean files:", len(clean_files))
         return clean_files

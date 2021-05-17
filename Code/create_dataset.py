@@ -9,11 +9,11 @@ mozilla_basepath = '/home/abhish/Documents/Dataset/MozillaDataset'
 urbansound_basepath = '/home/abhish/Documents/Dataset/UrbanSound8K'
 
 # load noise audio train and validation filenames
-us8k = UrbanSound8K(urbansound_basepath,val_dataset_size = 200)
+us8k = UrbanSound8K(urbansound_basepath,val_dataset_size = 100)
 noise_train_filenames,noise_val_filenames = us8k.get_train_val_filenames()
 
 # load clean audio train and validation filenames
-mcv = MozillaCommonVoiceDataset(mozilla_basepath,val_dataset_size = 1000)
+mcv = MozillaCommonVoiceDataset(mozilla_basepath,val_dataset_size = 100)
 clean_train_filenames,clean_val_filenames = mcv.get_train_val_filenames()
 
 
@@ -27,13 +27,14 @@ config = {'windowLength': windowLength,
 ## create train and validation dataset from audio dataset. 
 
 val_dataset = Dataset(clean_val_filenames,noise_val_filenames,**config)
-val_dataset.create_tf_record(prefix = 'val', subset_size = 2000)
+val_dataset.create_tf_record(prefix = 'val', subset_size = 100)
+
 train_dataset = Dataset(clean_train_filenames,noise_train_filenames, **config)
-train_dataset.create_tf_record(prefix = 'train', subset_size = 2000)
+train_dataset.create_tf_record(prefix = 'train', subset_size = 100)
 
 ## create test set
 clean_test_filenames = mcv.get_test_filenames()
 noise_test_filenames = us8k.get_test_filenames()
 
 test_dataset = Dataset(clean_test_filenames,noise_test_filenames,**config)
-test_dataset.create_tf_record(prefix = 'test',subset_size = 1000, parallel = False)
+test_dataset.create_tf_record(prefix = 'test',subset_size = 100, parallel = False)
