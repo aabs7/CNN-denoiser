@@ -42,8 +42,7 @@ class Dataset:
         return read_audio(filename, self.sample_rate)
 
     def _audio_random_crop(self, audio, duration):
-        audio_duration_secs = librosa.core.get_duration(audio, self.sample_rate)
-
+        audio_duration_secs = librosa.core.get_duration(audio, self.sample_rate) 
         ## duration: length of the cropped audio in seconds
         if duration >= audio_duration_secs:
             # print("Passed duration greater than audio duration of: ", audio_duration_secs)
@@ -73,9 +72,11 @@ class Dataset:
     def parallel_audio_processing(self, clean_filename):
 
         clean_audio, _ = read_audio(clean_filename, self.sample_rate)
-
+        
         # remove silent frame from clean audio
+        print("with silent frame:",clean_audio.shape)
         clean_audio = self._remove_silent_frames(clean_audio)
+        print("without silent frame:",clean_audio.shape)
 
         noise_filename = self._sample_noise_filename()
 
@@ -86,7 +87,9 @@ class Dataset:
         noise_audio = self._remove_silent_frames(noise_audio)
 
         # sample random fixed-sized snippets of audio
+        
         clean_audio = self._audio_random_crop(clean_audio, duration=self.audio_max_duration)
+        print("with cropping:",clean_audio.shape)
 
         # add noise to input image
         noiseInput = self._add_noise_to_clean_audio(clean_audio, noise_audio)
@@ -95,6 +98,7 @@ class Dataset:
         noisy_input_fe = FeatureExtractor(noiseInput, windowLength=self.window_length, overlap=self.overlap,
                                           sample_rate=self.sample_rate)
         noise_spectrogram = noisy_input_fe.get_stft_spectrogram()
+        
 
         # Or get the phase angle (in radians)
         # noisy_stft_magnitude, noisy_stft_phase = librosa.magphase(noisy_stft_features)
@@ -123,6 +127,11 @@ class Dataset:
         clean_magnitude = scaler.transform(clean_magnitude)
 
         return noise_magnitude, clean_magnitude, noise_phase
+
+    def return_values(self):
+        a = self.parallel_audio_processing(self.clean_filenames[1])
+        return a[0],a[1],a[2]
+
 
     def create_tf_record(self, *, prefix, subset_size, parallel=True):
         counter = 0

@@ -1,8 +1,10 @@
 from data_processing.urban_sound import UrbanSound8K
 from data_processing.feature_extractor import FeatureExtractor
+from data_processing.dataset import Dataset
 from data_processing.mozilla_common_voice import MozillaCommonVoiceDataset
-from utils import read_audio
+from utils import prepare_input_features, read_audio
 import numpy as np
+import matplotlib.pyplot as plt
 import librosa
 
 windowLength = 256
@@ -14,46 +16,36 @@ config = {'windowLength': windowLength,
 urbansound_basepath = '/home/abhish/Documents/Dataset/UrbanSound8K'
 mozilla_basepath = '/home/abhish/Documents/Dataset/MozillaDataset'
 
-mcv = MozillaCommonVoiceDataset(mozilla_basepath,val_dataset_size = 1000)
+mcv = MozillaCommonVoiceDataset(mozilla_basepath,val_dataset_size = 100)
 clean_train_filenames,clean_val_filenames = mcv.get_train_val_filenames()
 
-clean_filename = np.random.choice(clean_train_filenames)
+us8k = UrbanSound8K(urbansound_basepath,val_dataset_size = 100)
+noise_train_filenames,noise_val_filenames = us8k.get_train_val_filenames()
 
-clean_audio,sr = read_audio(clean_filename,config['fs'])
-print("clean audio:",clean_audio)
-
-#us8k = UrbanSound8K(urbansound_basepath,val_dataset_size = 200)
-#noise_train_filenames,noise_val_filenames = us8k.get_train_val_filenames()
-
-#print(noise_train_filenames)
-
-# 
-# noise_filename = np.random.choice(noise_train_filenames)
-# 
-# noise_audio, sr = read_audio(noise_filename,config['fs'])
-# print(noise_audio)
-
-# print("Sample rate:",sr)
-# print("Size of audio with silent frame:",np.size(noise_audio))
-# 
-# def remove_silent_frame(audio):
-    # trimed_audio = []
-    # indices = librosa.effects.split(audio,hop_length = config["overlap"],top_db = 20)
-# 
-    # for index in indices:
-        # trimed_audio.extend(audio[index[0]:index[1]])
-# 
-    # return np.array(trimed_audio)
-# 
-# remove silent frame from noise audio
-# noise_audio = remove_silent_frame(noise_audio)
-# print("Size of audio without silent frame:",np.size(noise_audio))
-# 
-# noise_audio_fe = FeatureExtractor(noise_audio,windowLength = windowLength,overlap = config["overlap"],
-                    # sample_rate = sr)
-# 
-# spectogram = noise_audio_fe.get_stft_spectrogram()
-# 
-# print(spectogram)
+#clean_filename = np.random.choice(clean_train_filenames)
+#noise_val_filename = np.random.choice(noise_val_filenames)
 
 
+clean_dataset = Dataset(clean_train_filenames, noise_train_filenames, **config)
+
+noise_mag,clean_mag,noise_phase = clean_dataset.return_values()
+
+print("Noise mag shape:",noise_mag.shape)
+
+stftSegment = prepare_input_features(noise_mag,numSegments=8,numFeatures=129)
+
+noise_stft_mag_features = np.transpose(stftSegment,(2,0,1))
+clean_mag = np.transpose(clean_mag,(1,0))
+noise_phase = np.transpose(noise_phase,(1,0))
+
+noise_stft_mag_features = np.expand_dims(noise_stft_mag_features,axis = 3)
+clean_mag = np.expand_dims(clean_mag,axis = 2)
+count = 0
+
+# for x_,y_,p_ in zip(noise_stft_mag_features,clean_mag,noise_phase):
+#     y_ = np.expand_dims(y_,2)
+#     print(x_.shape)
+#     print(y_.shape)
+#     print(p_.shape)
+#     count += 1
+# print(count)
